@@ -1,9 +1,9 @@
 local BufSweep = {}
 
 ---@param bufnr number
----@param options table
+---@param force boolean
 ---@return boolean
-local function is_sweepable(bufnr, options)
+local function is_sweepable(bufnr, force)
   if vim.api.nvim_get_current_buf() == bufnr then
     return false
   end
@@ -16,7 +16,7 @@ local function is_sweepable(bufnr, options)
     return false
   end
 
-  if vim.api.nvim_buf_get_option(bufnr, "modified") and not options.force then
+  if vim.api.nvim_buf_get_option(bufnr, "modified") and not force then
     return false
   end
 
@@ -28,10 +28,8 @@ local function echo(message)
   vim.api.nvim_echo({ { "[buf-sweep.nvim] " .. message } }, true, {})
 end
 
----@param options table|nil
+---@param options table
 function BufSweep.sweep(options)
-  local options = options or {}
-
   local bufnrs = vim.api.nvim_list_bufs()
   if vim.tbl_isempty(bufnrs) then
     echo("No buffer exists")
@@ -40,8 +38,8 @@ function BufSweep.sweep(options)
 
   local sweep_count = 0
   for _, bufnr in pairs(bufnrs) do
-    if is_sweepable(bufnr, options) then
-      vim.api.nvim_buf_delete(bufnr, { force = options.force or false })
+    if is_sweepable(bufnr, options.force) then
+      vim.api.nvim_buf_delete(bufnr, { force = options.force })
       sweep_count = sweep_count + 1
     end
   end
